@@ -1,0 +1,10 @@
+.App {
+  text-align: center;
+}
+
+.popup {
+  text-align: center;
+  height:10vh;
+  width:30vw;
+  z-index:2;
+}
