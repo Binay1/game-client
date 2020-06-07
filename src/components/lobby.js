@@ -41,7 +41,6 @@ class lobby extends React.Component {
             console.log(msg);
         });
         this.socket.on("enterGame", (url) => {
-          console.log("Getting the hint");
           this.props.history.push(url.redirectTo);
         });
       }
