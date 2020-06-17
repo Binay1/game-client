@@ -21,12 +21,18 @@ class reqPlay extends React.Component {
 
     render() {
         return(
-            <div className="popup">
-                <form>
-                    <label>You have been challenged to a game by </label>
-                    <button type="button" onClick={this.accept}>Accept</button>
-                    <button type="button" onClick={this.reject}>Reject</button>
-                </form>
+            <div id="requestBox" className="popup">
+                <div id="reqPlayContent">
+                    <h2>You have been challenged to a game by Player ID: {this.props.id}</h2>
+                    <div className="row">
+                        <div className="btnContainer col-sm-6">
+                            <button className="btn-lg" type="button" onClick={this.accept}>Accept</button>
+                        </div>
+                        <div className="btnContainer col-sm-6">
+                            <button className="btn-lg" type="button" onClick={this.reject}>Reject</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }

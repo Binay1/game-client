@@ -12,15 +12,16 @@ class lobby extends React.Component {
             playerID: this.props.playerID,
             input:"",
             reqPlay: {
-              visible: false,
               id:"",
+              visible: false,
             },
         }
-        this.socket=null;
+        this.socket = null;
         this.onSubmit = this.onSubmit.bind(this);
         this.onChange = this.onChange.bind(this);
         this.toggleReqPlay = this.toggleReqPlay.bind(this);
         this.updateReqPlayState = this.updateReqPlayState.bind(this);
+        this.playRandom = this.playRandom.bind(this);
     }
 
     componentDidMount() {
@@ -36,10 +37,13 @@ class lobby extends React.Component {
         this.socket.on("playerUpdate", (res) => {
           this.setState({playersInLobby: res.playersInLobby});
         });
+        // Receive a request
         this.socket.on("reqPlay", (reqID) => this.toggleReqPlay(reqID));
+        // Receive some kind of message from the server
         this.socket.on("message", (msg) => {
             console.log(msg);
         });
+        // Get redirected to the game
         this.socket.on("enterGame", (url) => {
           this.props.history.push(url.redirectTo);
         });
@@ -50,7 +54,7 @@ class lobby extends React.Component {
       }
 
       // to be passed to children so they can lift up the local state
-      updateReqPlayState(visible, id) {
+      updateReqPlayState(id, visible) {
         this.setState({reqPlay: {
           id: id,
           visible: visible,
@@ -63,6 +67,10 @@ class lobby extends React.Component {
           visible: true,
           id:reqID,
         }});
+      }
+
+      playRandom() {
+        this.socket.emit("playRandom");
       }
 
       onSubmit(event) {
@@ -78,10 +86,12 @@ class lobby extends React.Component {
 
       render() {
         return (
-          <div className="App">
-            <h1>Hello there</h1>
-            <h2>Your ID: {this.state.playerID}</h2>
-            <h3>Number of Players in lobby: {this.state.playersInLobby}</h3>
+          <div id="lobbyContainer">
+            <div id="messageDisplay"></div>
+            <div id="lobbyDetails">
+              <h2>Your ID: {this.state.playerID}</h2>
+              <h2>Number of Players in lobby: {this.state.playersInLobby}</h2>
+            </div>
             {(this.state.reqPlay.visible) ? 
             <ReqPlay 
              visible = {this.state.reqPlay.visible}
@@ -89,11 +99,24 @@ class lobby extends React.Component {
              socket={this.socket}
              updateState={this.updateReqPlayState}/>
              : null}
-            <form onSubmit={this.onSubmit}>
-                <label>Player ID</label>
-                <input type="text" id="friendID" placeholder="Player ID" value={this.state.input} onChange={this.onChange}></input>
-                <button>Play with a friend</button>
-            </form>
+             <div className="container-fluid">
+               <div className="row">
+                <div id="reqPlayForm" className="col-sm-6">
+                  <h1> Play with a Friend</h1>
+                  <form onSubmit={this.onSubmit}>
+                    <div className="form-group">
+                      <label>Enter Player ID</label>
+                      <input className="form-control" type="text" id="friendID" placeholder="Player ID" value={this.state.input} onChange={this.onChange}></input>
+                    </div>
+                    <button className="btn-lg btn-block">Invite</button>
+                  </form>
+                </div>
+                <div id="main" className="col-sm-6">
+                  <h1 id="logo">MAZE <br/> RUNNER</h1>
+                  <button id="playNow" className="btn-lg" type="button" onClick = {this.playRandom}>Play Now</button>
+                </div>
+               </div>
+             </div>
           </div>
         );
       }

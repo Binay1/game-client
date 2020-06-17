@@ -8,7 +8,6 @@ class App extends React.Component {
   constructor() {
     super();
     this.updateState = this.updateState.bind(this);
-    this.apiCall = this.apiCall.bind(this);
     this.state = {
       playerID: "",
     }
@@ -20,19 +19,26 @@ class App extends React.Component {
       playerID: playerID
     });
   }
-
-  // Express api call (useless right now, maybe forever since I don't have any db related mechanisms in mind)
-  apiCall() {
-    fetch("http://localhost:5000")
-    .then(res => res.json()).then(
-      res => this.setState({userID : res.userID})); 
-  }
-
+  
   render() {
     return (
       <div className="App">
         <Lobby playerID = {this.state.playerID}
                updateState = {this.updateState}/>
+        <div id="infoContainer" className="container-fluid">
+          <div className="row d-flex justify-content-around">
+            <div className="col-sm-5" id="controls">
+              <div className="infoWrapper">
+                <h1>Rules</h1>
+              </div>
+            </div>
+            <div className="col-sm-5" id="rules">
+            <div className="infoWrapper">
+              <h1>Controls</h1>
+            </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

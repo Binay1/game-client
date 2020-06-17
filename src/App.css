@@ -1,12 +1,119 @@
+@font-face {
+  font-family: 'Odibee Sans';
+  src: url('./fonts/OdibeeSans-Regular.ttf');
+}
+
+h1 {
+  font-size: 7vh;
+}
+
+h2 {
+  font-size: 5vh;
+}
+
 .App {
+  z-index:1;
+  font-family: 'Odibee Sans';
+  color: #4B0082;
+  height: inherit;
+  width: inherit;
+  background-image: url('./images/background3.png');
+  background-repeat:no-repeat;
+  background-position: fixed;
+  background-size: cover;
+}
+
+#logo {
+  font-size: 10vh;
+  line-height:9vh;
+}
+
+#lobbyContainer {
+  margin-top: 2vh;
+  margin-left: 1vw;
+  margin-right: 1vw;
+  margin-bottom: 2vh;
+}
+
+#messageDisplay {
+  margin-top: 1vh;
+  margin-bottom: 1vh;
+  height: 4vh;
+}
+
+#lobbyDetails {
+  margin-bottom: 3vh;
+  background-color:white;
+  padding-left: 1vw;
+  padding-right: 1vw;
+  padding-top:2vh;
+  padding-bottom:2vh;
+  width:24vw;
+}
+
+#reqPlayForm {
   text-align: center;
+  border: 2px solid #4B0082;
+  border-radius: 3px;
+  padding-top: 2vh;
+  padding-left: 2vw;
+  padding-right: 2vw;
+  padding-bottom: 2vh;
+  background-color:white;
+}
+
+#reqPlayContent {
+  margin-top: 4vh;
+}
+
+.btnContainer button {
+  margin-top:0;
+  width: 8vw;
+}
+
+#main {
+  text-align: center;
+  margin-top: 3vh;
+}
+
+#controls {
+  text-align: center;
+  border: 2px solid #4B0082;
+  border-radius: 3px;
+  background-color: white;
+}
+
+#rules {
+  text-align: center;
+  border: 2px solid #4B0082;
+  border-radius: 3px;
+  background-color: white;
+  
+}
+
+#playNow {
+  width: 10vw;
 }
 
 .popup {
   text-align: center;
-  height:10vh;
-  width:30vw;
+  height:30vh;
+  width:40vw;
   z-index:2;
+  background-color: white;
+  border: 2px solid #4B0082;
+  position: absolute;
+	top:0;
+	bottom: 0;
+	left: 0;
+	right: 0; 	
+	margin: auto;
+}
+
+.btnContainer {
+  padding-left: 0;
+  padding-right: 0;
+  margin-top: 2vh;
 }
 
 body {
@@ -16,9 +123,34 @@ body {
   padding: 0 0 0 0;
 }
 
+button {
+  margin-top:2vh;
+  background-color: #4B0082;
+  color:white;
+}
+
+button:hover {
+  background-color: white;
+  color: #4B0082;
+  border-color:#4B0082;
+}
+
+label {
+  font-size: 3vh;
+}
+
 #root {
-  height: inherit;
-  width:inherit;
+  height: 100vh;
+  width: 100vw;
+}
+
+#infoContainer {
+  margin-top: 4vh;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+  margin-bottom: 2vh;
 }
 
 #canvas {
