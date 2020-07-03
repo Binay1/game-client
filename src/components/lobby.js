@@ -15,6 +15,7 @@ class lobby extends React.Component {
               id:"",
               visible: false,
             },
+            message : "",
         }
         this.socket = null;
         this.onSubmit = this.onSubmit.bind(this);
@@ -41,7 +42,10 @@ class lobby extends React.Component {
         this.socket.on("reqPlay", (reqID) => this.toggleReqPlay(reqID));
         // Receive some kind of message from the server
         this.socket.on("message", (msg) => {
-            console.log(msg);
+            this.setState({message: msg});
+            setTimeout(() => {
+              this.setState({message: ""});
+            }, 5000);
         });
         // Get redirected to the game
         this.socket.on("enterGame", (url) => {
@@ -87,7 +91,9 @@ class lobby extends React.Component {
       render() {
         return (
           <div id="lobbyContainer">
-            <div id="messageDisplay"></div>
+            <div id="messageDisplay">
+              <p>{this.state.message}</p>
+            </div>
             <div id="lobbyDetails">
               <h2>Your ID: {this.state.playerID}</h2>
               <h2>Number of Players in lobby: {this.state.playersInLobby}</h2>

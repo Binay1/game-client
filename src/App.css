@@ -4,41 +4,43 @@
 }
 
 h1 {
-  font-size: 7vh;
+  font-size: 4vw;
 }
 
 h2 {
-  font-size: 5vh;
+  font-size: 2.5vw;
 }
 
 .App {
   z-index:1;
-  font-family: 'Odibee Sans';
-  color: #4B0082;
   height: inherit;
   width: inherit;
+  padding-top: 2vh;
+  padding-bottom: 2vh;
+  padding-left: 1vw;
+  padding-right:1vw;
   background-image: url('./images/background3.png');
   background-repeat:no-repeat;
-  background-position: fixed;
   background-size: cover;
+  height:100vh;
+  width:100vw;
 }
 
 #logo {
-  font-size: 10vh;
-  line-height:9vh;
-}
-
-#lobbyContainer {
-  margin-top: 2vh;
-  margin-left: 1vw;
-  margin-right: 1vw;
-  margin-bottom: 2vh;
+  font-size: 7vw;
+  line-height:6vw;
 }
 
 #messageDisplay {
-  margin-top: 1vh;
-  margin-bottom: 1vh;
-  height: 4vh;
+  margin-bottom: 2vh;
+  height: 5vh;
+  width:inherit;
+  text-align:center;
+  font-size:1.5vw;
+}
+
+#messageDisplay p {
+  margin-bottom:0;
 }
 
 #lobbyDetails {
@@ -48,7 +50,7 @@ h2 {
   padding-right: 1vw;
   padding-top:2vh;
   padding-bottom:2vh;
-  width:24vw;
+  width:27vw;
 }
 
 #reqPlayForm {
@@ -71,28 +73,29 @@ h2 {
   width: 8vw;
 }
 
+.infoBox {
+  text-align: center;
+  border: 2px solid #4B0082;
+  border-radius: 3px;
+  background-color: white;
+}
+
 #main {
   text-align: center;
   margin-top: 3vh;
 }
 
 #controls {
-  text-align: center;
-  border: 2px solid #4B0082;
-  border-radius: 3px;
-  background-color: white;
+  margin: auto;
 }
 
 #rules {
-  text-align: center;
-  border: 2px solid #4B0082;
-  border-radius: 3px;
-  background-color: white;
   
 }
 
 #playNow {
-  width: 10vw;
+  width: 15vw;
+  font-size: 2vw;
 }
 
 .popup {
@@ -117,10 +120,13 @@ h2 {
 }
 
 body {
+  font-family: 'Odibee Sans';
+  color: #4B0082;
   height:100vh;
   width:100vw;
   margin: 0 0 0 0;
   padding: 0 0 0 0;
+  overflow: hidden;
 }
 
 button {
@@ -139,23 +145,31 @@ label {
   font-size: 3vh;
 }
 
+#infoContainer {
+  margin-top: 4vh;
+  margin-bottom: 4vh;
+}
+
+#statusBar {
+  height: 6vh;
+  font-size:2vw;
+  position:absolute;
+  text-align:center;
+  width:inherit;
+  color:white;
+}
+
 #root {
   height: 100vh;
   width: 100vw;
 }
 
-#infoContainer {
-  margin-top: 4vh;
-  margin-left: 0;
-  margin-right: 0;
-  padding-left: 0;
-  padding-right: 0;
-  margin-bottom: 2vh;
+#gameContainer {
+  height:100vh;
+  width: 100vw;
 }
 
 #canvas {
   height:100vh;
   width: 100vw;
-  margin-left: 0;
-  margin-right: 0;
 }

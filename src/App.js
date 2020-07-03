@@ -26,13 +26,13 @@ class App extends React.Component {
         <Lobby playerID = {this.state.playerID}
                updateState = {this.updateState}/>
         <div id="infoContainer" className="container-fluid">
-          <div className="row d-flex justify-content-around">
-            <div className="col-sm-5" id="controls">
+          <div className="row">
+            <div className="col-sm-6 infoBox" id="rules">
               <div className="infoWrapper">
                 <h1>Rules</h1>
               </div>
             </div>
-            <div className="col-sm-5" id="rules">
+            <div className="col-sm-4 infoBox" id="controls">
             <div className="infoWrapper">
               <h1>Controls</h1>
             </div>
