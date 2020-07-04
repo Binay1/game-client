@@ -10,6 +10,8 @@ import '../App.css';
 import flashAnimation from '../helpers/animations/flashAnimation';
 import recoil from '../helpers/animations/recoilAnimation';
 import emitterAnimation from '../helpers/animations/emitterAnimation';
+import fogAnimation from '../helpers/animations/fogAnimation';
+import intensityAnimation from '../helpers/animations/intensityAnimation';
 import shakeAnimation from '../helpers/animations/shakeAnimation';
 import flashMaterial from '../helpers/materials/flashMaterial';
 import groundMaterial from '../helpers/materials/groundMaterial';
@@ -272,7 +274,12 @@ export default () => {
                     }
                     else if(equippedSpell.spellName==="Clarity") {
                         revertChanges = "Clarity";
-                        scene.fogEnd = 100.0;
+                        scene.animations.push(fogAnimation(scene.fogEnd, 100.0));
+                        let fogOutAnim = scene.beginAnimation(scene, 0, 30, false);
+                        fogOutAnim.onAnimationEnd = () => {
+                            scene.animations.pop();
+                        };
+                        //scene.fogEnd = 100.0;
                     }
                     equippedSpell = null;
                     setStatusBarMessage(defaultMessage);
@@ -281,7 +288,11 @@ export default () => {
                             camera.speed = 0.2;
                         }
                         else if(revertChanges==="Clarity") {
-                            scene.fogEnd = 10.0
+                            scene.animations.push(fogAnimation(scene.fogEnd, 10.0));
+                            let fogInAnim = scene.beginAnimation(scene, 0, 30, false);
+                            fogInAnim.onAnimationEnd = () => {
+                                scene.animations.pop();
+                            };
                         }
                         glowStaff.intensity=0.5;
                     }, duration);
@@ -353,9 +364,11 @@ export default () => {
         glowNormal.intensity = 0.7;
         glowStaff = new BABYLON.GlowLayer("glowStaff", scene);
         glowStaff.intensity=0.5;
+        glowStaff.animations = [];
         scene.gravity = new BABYLON.Vector3(0,-0.3,0);
         scene.collisionsEnabled = true;
         scene.enablePhysics();
+        scene.animations = [];
 
         // fog settings
         scene.fogMode = BABYLON.Scene.FOGMODE_LINEAR;
@@ -460,10 +473,18 @@ export default () => {
                         }, shotDetails.spellDuration*1000);
                     }
                     else if (shotDetails.spellName==="Blind") {
-                        scene.fogEnd = 0.8;
+                        scene.animations.push(fogAnimation(scene.fogEnd, 3.8));
+                        let fogInAnim = scene.beginAnimation(scene, 0, 30, false);
+                        fogInAnim.onAnimationEnd = () => {
+                            scene.animations.pop();
+                        };
                         setStatusBarMessage("You have been blinded");
                         setTimeout(() => {
-                            scene.fogEnd = 10.0;
+                            scene.animations.push(fogAnimation(scene.fogEnd, 10.0));
+                            let fogOutAnim = scene.beginAnimation(scene, 0, 30, false);
+                            fogOutAnim.onAnimationEnd = () => {
+                                scene.animations.pop();
+                            };
                             setStatusBarMessage(defaultMessage);
                         }, shotDetails.spellDuration*1000);
                     }

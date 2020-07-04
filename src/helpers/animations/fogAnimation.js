@@ -8,7 +8,7 @@ const createAnimation = (start, end) => {
         value: start,
     });
     keys.push({
-        frame: 15,
+        frame: 30,
         value: end,
     });
     fogAnimation.setKeys(keys);
