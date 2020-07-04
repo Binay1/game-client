@@ -358,11 +358,11 @@ export default () => {
         scene.enablePhysics();
 
         // fog settings
-        // scene.fogMode = BABYLON.Scene.FOGMODE_LINEAR;
-        // scene.fogColor = new BABYLON.Color3.FromHexString("#4B0082");
-        // scene.fogDensity = 0.5;
-        // scene.fogStart = 0.0;
-        // scene.fogEnd = 10.0; // can't see anything beyond this point
+        scene.fogMode = BABYLON.Scene.FOGMODE_LINEAR;
+        scene.fogColor = new BABYLON.Color3.FromHexString("#4B0082");
+        scene.fogDensity = 0.5;
+        scene.fogStart = 0.0;
+        scene.fogEnd = 10.0; // can't see anything beyond this point
 
         let light = new BABYLON.PointLight("pointLight", new BABYLON.Vector3(gameDetails.maze.length, gameDetails.maze.length, gameDetails.maze.length), scene); 
         light.intensity = 0.8;
@@ -400,11 +400,11 @@ export default () => {
             playbackRate: 2.5,
             volume: 2,
         });
-        backgroundMusic = new BABYLON.Sound("bgMusic", "https://dl.dropbox.com/s/rvdx3cvk4roxy30/backgroundMusic.mp3", scene, null, {
-            loop: true,
-            autoplay:true,
-            volume: 0.8,
-        });
+        // backgroundMusic = new BABYLON.Sound("bgMusic", "https://dl.dropbox.com/s/rvdx3cvk4roxy30/backgroundMusic.mp3", scene, null, {
+        //     loop: true,
+        //     autoplay:true,
+        //     volume: 0.8,
+        // });
         //backgroundMusic.play();
 
         // Initialize the camera
