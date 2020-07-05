@@ -27,7 +27,7 @@ class lobby extends React.Component {
 
     componentDidMount() {
         // connect client to server
-        this.socket=io.connect("http://localhost:5000/lobby");
+        this.socket=io.connect("http://192.168.1.6:5000/lobby");
         // receive player id and set component state
         this.socket.on("initialize", (res) => {
           this.setState({playerID: res.playerID});

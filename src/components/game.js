@@ -6,6 +6,7 @@ import { SceneLoader } from "@babylonjs/core/Loading/sceneLoader";
 import "@babylonjs/loaders/glTF/2.0/glTFLoader";
 import * as Cannon from 'cannon';
 import * as GUI from '@babylonjs/gui/2D';
+import GamePopup from './gamePopup';
 import '../App.css';
 import flashAnimation from '../helpers/animations/flashAnimation';
 import recoil from '../helpers/animations/recoilAnimation';
@@ -29,8 +30,8 @@ export default () => {
     const [gameDetailsAvailable, setGameDetailsAvailable] = useState(false);
     const [socket, setSocket] = useState(null);
     const defaultMessage = "Maze Runner";
-    const [statusBarMessage, setStatusBarMessage] = useState(defaultMessage);
-    // eslint-disable-next-line
+    const [popupMessage, setPopupMessage] = useState("");
+    const [statusBarMessage, setStatusBarMessage] = useState("Click to enter game");
     const [gameOver, setGameOver] = useState(false);
 
     // Declare all meshes and variables that you might need across functions here in order to have access
@@ -50,22 +51,22 @@ export default () => {
     let mazeContainer;
     const blockSize=3;
     let spellMeshTracker=[];
-    let glowStaff;
+    let glowWand;
     let equippedSpell = null;
     let particleSystem;
     let spellSound;
-    let backgroundMusic;
+    //let backgroundMusic;
 
     // Component setup and cleanup
     useEffect(() => {
         // this is run on component mount
-        setSocket(io.connect("http://localhost:5000" + window.location.pathname));
+        setSocket(io.connect("http://192.168.1.6:5000" + window.location.pathname));
         // this is run on component dismount
         return () => {
             if(socket!==null) {
                 socket.disconnect();
             }
-        } // eslint-disable-next-line
+        }
     }, []); 
 
     // all socket events pre-render go here
@@ -124,7 +125,7 @@ export default () => {
             spellMesh.id = l;
             spellMesh.position = new BABYLON.Vector3(spellBook[l].position.xcoord*2*blockSize,blockSize/2+0.6,spellBook[l].position.zcoord*2*blockSize);
             spellMesh.material = new BABYLON.StandardMaterial("spell", scene);
-            spellMesh.material.diffuseColor = new BABYLON.Color3.FromHexString("#ed4545");
+            spellMesh.material.diffuseColor = new BABYLON.Color3.FromHexString("#FF4500");
             spellMesh.material.emissiveColor = spellMesh.material.diffuseColor;
             spellMesh.material.disableLighting=true;
             spellMesh.applyFog = true;
@@ -137,7 +138,7 @@ export default () => {
         let targetMesh = new BABYLON.MeshBuilder.CreateSphere("target", {diameter: 1.5}, scene);
         targetMesh.position = new BABYLON.Vector3(target.xcoord*2*blockSize, blockSize/2+1.0,target.zcoord*2*blockSize);
         targetMesh.material = new BABYLON.StandardMaterial("target", scene);
-        targetMesh.material.diffuseColor = new BABYLON.Color3.FromHexString("#FF4500");
+        targetMesh.material.diffuseColor = new BABYLON.Color3.FromHexString("#ffcc00");
         targetMesh.material.emissiveColor =targetMesh.material.diffuseColor;
         targetMesh.isPickable = false;
         targetMesh.checkCollisions = true;
@@ -176,7 +177,7 @@ export default () => {
         }
     }
 
-    // Sets up camera, attaches staff and all related animations
+    // Sets up camera, attaches wand and all related animations
     const createPlayer = (scene) => {
         camera = new BABYLON.UniversalCamera("mainCamera", new BABYLON.Vector3().copyFrom(initialPosition), scene);
         camera.setTarget(BABYLON.Vector3.Zero());
@@ -198,7 +199,15 @@ export default () => {
                 setStatusBarMessage("Spell equipped: " + collidedMesh.spellName);
                 spellMeshTracker[collidedMesh.id].dispose();
             }
-            else if(collidedMesh.name==="target") {
+            else if(collidedMesh.name === "target" && !gameOver) {
+                socket.emit("reachedTarget");
+                console.log("req sent");
+                if(pointerLocked) {
+                    document.exitPointerLock();
+                }
+                camera.inputs.attached.keyboard.detachControl();
+                camera.inputs.attached.mouse.detachControl();
+                setPopupMessage("Congratulations! You won!");
                 setGameOver(true);
             }
         }
@@ -213,30 +222,31 @@ export default () => {
         // This attaches the camera to the canvas
         camera.attachControl(canvas, true);
 
-        // Staff creation and animations
-        let staff = new BABYLON.TransformNode("staff", scene);
-        let staffHandle = BABYLON.MeshBuilder.CreateCylinder("staffHandle", {diameterTop: 0.08, diameterBottom: 0.1, height: 2.5}, scene);
-        staffHandle.material = new BABYLON.StandardMaterial("handleMat", scene);
-        staffHandle.material.diffuseTexture = new BABYLON.Texture("https://i.imgur.com/tKjx3DI.jpg");
-        staffHandle.parent = staff;
-        let staffOrb = BABYLON.MeshBuilder.CreateSphere("staffOrb", {diameter: 0.15});
-        staffOrb.material = new BABYLON.StandardMaterial("orbMat", scene);
-        staffOrb.material.disableLighting = true;
-        staffOrb.material.diffuseColor = new BABYLON.Color3.FromHexString("#000066");
-        staffOrb.material.emissiveColor = new BABYLON.Color3.FromHexString("#34e5eb");
-        staffOrb.position.y = 1.33;
-        glowStaff.addIncludedOnlyMesh(staffOrb)
-        staffOrb.parent = staff;
-        staff.rotation.x = Math.PI/3;
-        staff.rotation.y = -Math.PI/6; 
-        staff.parent=camera;
-        staff.position = new BABYLON.Vector3(1, -1,1);
-        staff.animations.push(recoil(staff.position.z));
+        // wand creation and animations
+        let wand = new BABYLON.TransformNode("wand", scene);
+        let wandHandle = BABYLON.MeshBuilder.CreateCylinder("wandHandle", {diameterTop: 0.08, diameterBottom: 0.1, height: 2.5}, scene);
+        wandHandle.material = new BABYLON.StandardMaterial("handleMat", scene);
+        wandHandle.material.diffuseTexture = new BABYLON.Texture("https://i.imgur.com/tKjx3DI.jpg");
+        wandHandle.parent = wand;
+        let wandOrb = BABYLON.MeshBuilder.CreateSphere("wandOrb", {diameter: 0.15});
+        wandOrb.material = new BABYLON.StandardMaterial("orbMat", scene);
+        wandOrb.material.disableLighting = true;
+        wandOrb.material.diffuseColor = new BABYLON.Color3.FromHexString("#000066");
+        wandOrb.material.emissiveColor = new BABYLON.Color3.FromHexString("#34e5eb");
+        wandOrb.position.y = 1.33;
+        glowWand.intensity=0.5;
+        glowWand.addIncludedOnlyMesh(wandOrb)
+        wandOrb.parent = wand;
+        wand.rotation.x = Math.PI/3;
+        wand.rotation.y = -Math.PI/6; 
+        wand.parent=camera;
+        wand.position = new BABYLON.Vector3(1, -1,1);
+        wand.animations.push(recoil(wand.position.z));
 
         muzzleSphere = BABYLON.MeshBuilder.CreateSphere("muzzle", { diameter: 0.1 }, scene);
         muzzleSphere.material = flashMaterial(scene);
         muzzleSphere.diffuseColor = new BABYLON.Color3.FromHexString("#FFFFE0");
-        muzzleSphere.parent=staffOrb;
+        muzzleSphere.parent=wandOrb;
         muzzleSphere.position = new BABYLON.Vector3(-0.05,0.01,-0.02);
         muzzleSphere.visibility=0;
         muzzleSphere.animations=[];
@@ -249,7 +259,7 @@ export default () => {
                     spellSound.play();
                     const ray = camera.getForwardRay(20);
                     scene.beginAnimation(muzzleSphere, 0, 10, false);
-                    scene.beginAnimation(staff, 0, 10, false);
+                    scene.beginAnimation(wand, 0, 10, false);
                     const pick = scene.pickWithRay(ray);
                     socket.emit("fire", {
                         hitSomething: pick.hit,
@@ -257,15 +267,20 @@ export default () => {
                         hitPlayer: pick.pickedMesh.name.includes("wizard"),
                         spellName: equippedSpell.spellName,
                         spellDuration: equippedSpell.spellDuration,
+                    }, () => {
+                        equippedSpell = null;
                     });
                     if(pick.hit) {
                         createImpact(scene, pick.pickedPoint, true);
-                        equippedSpell = null;
                         setStatusBarMessage(defaultMessage);
                     }
                 }
                 else {
-                    glowStaff.intensity = 5;
+                    glowWand.animations.push(intensityAnimation(glowWand.intensity, 5));
+                    let intensityIncAnimation = scene.beginAnimation(glowWand, 0, 30);
+                    intensityIncAnimation.onAnimationEnd = () => {
+                        glowWand.animations.pop();
+                    }
                     let duration = equippedSpell.spellDuration*1000;
                     let revertChanges;
                     if(equippedSpell.spellName==="Speed") {
@@ -279,11 +294,15 @@ export default () => {
                         fogOutAnim.onAnimationEnd = () => {
                             scene.animations.pop();
                         };
-                        //scene.fogEnd = 100.0;
                     }
                     equippedSpell = null;
                     setStatusBarMessage(defaultMessage);
                     setTimeout(() => {
+                        glowWand.animations.push(intensityAnimation(glowWand.intensity, 0.5));
+                        let intensityDecAnimation = scene.beginAnimation(glowWand, 0, 30);
+                        intensityDecAnimation.onAnimationEnd = () => {
+                            glowWand.animations.pop();
+                        }
                         if(revertChanges==="Speed") {
                             camera.speed = 0.2;
                         }
@@ -294,7 +313,6 @@ export default () => {
                                 scene.animations.pop();
                             };
                         }
-                        glowStaff.intensity=0.5;
                     }, duration);
                 }
             }
@@ -302,7 +320,7 @@ export default () => {
                 let previousMessage = statusBarMessage;
                 setStatusBarMessage("You don't have any spells equipped");
                 setTimeout(()=> {
-                    if(statusBarMessage!==defaultMessage) {
+                    if(statusBarMessage!==defaultMessage && previousMessage!=="Click to enter game") {
                         setStatusBarMessage(previousMessage);
                     }
                     else {
@@ -362,20 +380,19 @@ export default () => {
         scene.clearColor = new BABYLON.Color3.FromHexString("#4B0082");
         let glowNormal = new BABYLON.GlowLayer("glowNormal", scene);
         glowNormal.intensity = 0.7;
-        glowStaff = new BABYLON.GlowLayer("glowStaff", scene);
-        glowStaff.intensity=0.5;
-        glowStaff.animations = [];
+        glowWand = new BABYLON.GlowLayer("glowWand", scene);
+        glowWand.animations = [];
         scene.gravity = new BABYLON.Vector3(0,-0.3,0);
         scene.collisionsEnabled = true;
         scene.enablePhysics();
         scene.animations = [];
 
         // fog settings
-        scene.fogMode = BABYLON.Scene.FOGMODE_LINEAR;
-        scene.fogColor = new BABYLON.Color3.FromHexString("#4B0082");
-        scene.fogDensity = 0.5;
-        scene.fogStart = 0.0;
-        scene.fogEnd = 10.0; // can't see anything beyond this point
+        // scene.fogMode = BABYLON.Scene.FOGMODE_LINEAR;
+        // scene.fogColor = new BABYLON.Color3.FromHexString("#4B0082");
+        // scene.fogDensity = 0.5;
+        // scene.fogStart = 0.0;
+        // scene.fogEnd = 10.0; // can't see anything beyond this point
 
         let light = new BABYLON.PointLight("pointLight", new BABYLON.Vector3(gameDetails.maze.length, gameDetails.maze.length, gameDetails.maze.length), scene); 
         light.intensity = 0.8;
@@ -394,14 +411,15 @@ export default () => {
         scene.onPointerDown = (event) => {
             if(!pointerLocked) {
             canvas.requestPointerLock();
+            setStatusBarMessage(defaultMessage);
             }
         } 
         const togglePointerLocked = () => {
             if(!document.pointerLockElement) {
-            pointerLocked=false;
+                pointerLocked=false;
             }
             else {
-            pointerLocked=true;
+                pointerLocked=true;
             }
         }
   
@@ -418,7 +436,6 @@ export default () => {
         //     autoplay:true,
         //     volume: 0.8,
         // });
-        //backgroundMusic.play();
 
         // Initialize the camera
         initialPosition = new BABYLON.Vector3(gameDetails.startPosition.xcoord*2*blockSize,blockSize+0.5275,gameDetails.startPosition.zcoord*2*blockSize);
@@ -431,7 +448,7 @@ export default () => {
         opponentInitialPosition = new BABYLON.Vector3(gameDetails.opponentPosition.xcoord*2*blockSize,blockSize-0.25,gameDetails.opponentPosition.zcoord*2*blockSize);
         opponentContainer = new BABYLON.TransformNode("opponentContainer", scene);
         opponentContainer.position = new BABYLON.Vector3().copyFrom(opponentInitialPosition);
-        SceneLoader.ImportMesh("wizard", "/assets/models/", "wizardAttempt3.glb", scene, function (newMesh, particleSystems, skeletons) {
+        SceneLoader.ImportMesh("wizard", "/assets/models/", "wizardLite.glb", scene, function (newMesh, particleSystems, skeletons) {
             opponent = newMesh[0];
             opponent.parent = opponentContainer;
             opponent.position = BABYLON.Vector3.Zero();
@@ -492,6 +509,17 @@ export default () => {
             }
         });
 
+        socket.on("gg", (details) => {
+            console.log("received gameOver");
+            if(pointerLocked) {
+                document.exitPointerLock();
+            }
+            setPopupMessage(details.message);
+            setGameOver(true);
+            camera.inputs.attached.keyboard.detachControl();
+            camera.inputs.attached.mouse.detachControl();
+        });
+
         // Send player position and direction to opponent before each render
         scene.onBeforeRenderObservable.add(()=>{
             let direction = camera.getForwardRay().direction;
@@ -537,7 +565,7 @@ export default () => {
             if (scene !== null) {
                 scene.dispose();
             }
-        } // eslint-disable-next-line
+        } 
     }, [reactCanvas, gameDetailsAvailable]);
 
     return (
@@ -545,6 +573,7 @@ export default () => {
             <div id="statusBar">
                 <p>{statusBarMessage}</p>
             </div>
+            { (gameOver) ? <GamePopup message={popupMessage}/> : null }
             <canvas ref={reactCanvas} id="canvas" />
         </div>
     );

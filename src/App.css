@@ -22,7 +22,7 @@ h2 {
   background-image: url('./images/background3.png');
   background-repeat:no-repeat;
   background-size: cover;
-  height:100vh;
+  height:100%;
   width:100vw;
 }
 
@@ -64,7 +64,7 @@ h2 {
   background-color:white;
 }
 
-#reqPlayContent {
+.popupContent {
   margin-top: 4vh;
 }
 
@@ -78,6 +78,8 @@ h2 {
   border: 2px solid #4B0082;
   border-radius: 3px;
   background-color: white;
+  min-height: 42vh;
+  font-size: 1.5vw;
 }
 
 #main {
@@ -87,6 +89,7 @@ h2 {
 
 #controls {
   margin: auto;
+  font-size: 2.5vw;
 }
 
 #rules {
@@ -122,11 +125,12 @@ h2 {
 body {
   font-family: 'Odibee Sans';
   color: #4B0082;
-  height:100vh;
+  height:100%;
   width:100vw;
   margin: 0 0 0 0;
   padding: 0 0 0 0;
-  overflow: hidden;
+  overflow-x:hidden;
+  /* overflow: hidden; */
 }
 
 button {
@@ -160,7 +164,7 @@ label {
 }
 
 #root {
-  height: 100vh;
+  height: 100%;
   width: 100vw;
 }
 

@@ -22,7 +22,7 @@ class reqPlay extends React.Component {
     render() {
         return(
             <div id="requestBox" className="popup">
-                <div id="reqPlayContent">
+                <div className="popupContent">
                     <h2>You have been challenged to a game by Player ID: {this.props.id}</h2>
                     <div className="row">
                         <div className="btnContainer col-sm-6">
