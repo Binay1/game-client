@@ -388,11 +388,11 @@ export default () => {
         scene.animations = [];
 
         // fog settings
-        // scene.fogMode = BABYLON.Scene.FOGMODE_LINEAR;
-        // scene.fogColor = new BABYLON.Color3.FromHexString("#4B0082");
-        // scene.fogDensity = 0.5;
-        // scene.fogStart = 0.0;
-        // scene.fogEnd = 10.0; // can't see anything beyond this point
+        scene.fogMode = BABYLON.Scene.FOGMODE_LINEAR;
+        scene.fogColor = new BABYLON.Color3.FromHexString("#4B0082");
+        scene.fogDensity = 0.5;
+        scene.fogStart = 0.0;
+        scene.fogEnd = 10.0; // can't see anything beyond this point
 
         let light = new BABYLON.PointLight("pointLight", new BABYLON.Vector3(gameDetails.maze.length, gameDetails.maze.length, gameDetails.maze.length), scene); 
         light.intensity = 0.8;

@@ -18,3 +18,7 @@ This is a battle between two wizards stuck in the void between two dimensions. T
 - WASD or Arrow keys for movement
 - Mouse to look around
 - Click to fire spell
+
+# Note
+Right now, the ip address that the client connects to has been hard-coded. Since it is a multiplayer game, I naturally had to test it with multiple computers. You will most likely have to change the ip to the one running the application. It will be displayed on the terminal once you start the client so you don't need to go digging for it. The only two places where the change needs to be made is in lobby.js, game.js
+Change the line that looks like io.connect("http://192.168.1.6:5000") to the new ip address. Leave the port number unchanged.
