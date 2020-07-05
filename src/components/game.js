@@ -66,7 +66,7 @@ export default () => {
             if(socket!==null) {
                 socket.disconnect();
             }
-        }
+        } // eslint-disable-next-line
     }, []); 
 
     // all socket events pre-render go here
@@ -565,7 +565,7 @@ export default () => {
             if (scene !== null) {
                 scene.dispose();
             }
-        } 
+        } // eslint-disable-next-line
     }, [reactCanvas, gameDetailsAvailable]);
 
     return (

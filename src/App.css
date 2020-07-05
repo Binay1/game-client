@@ -129,13 +129,13 @@ body {
   width:100vw;
   margin: 0 0 0 0;
   padding: 0 0 0 0;
-  overflow-x:hidden;
   /* overflow: hidden; */
 }
 
 button {
   margin-top:2vh;
   background-color: #4B0082;
+  border-color: #4B0082;
   color:white;
 }
 
