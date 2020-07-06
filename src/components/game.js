@@ -267,9 +267,8 @@ export default () => {
                         hitPlayer: pick.pickedMesh.name.includes("wizard"),
                         spellName: equippedSpell.spellName,
                         spellDuration: equippedSpell.spellDuration,
-                    }, () => {
-                        equippedSpell = null;
                     });
+                    equippedSpell = null;
                     if(pick.hit) {
                         createImpact(scene, pick.pickedPoint, true);
                         setStatusBarMessage(defaultMessage);
