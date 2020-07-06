@@ -44,9 +44,9 @@ class App extends React.Component {
             <div className="infoWrapper">
               <h1>Controls</h1>
               <p>
-                - WASD or Arrow keys for movement <br/>
-                - Mouse to look around <br/>
-                - Click to fire spell <br/>
+                WASD or Arrow keys for movement <br/>
+                Mouse to look around <br/>
+                Click to fire spell <br/>
               </p>
             </div>
             </div>

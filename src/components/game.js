@@ -510,7 +510,6 @@ export default () => {
         });
 
         socket.on("gg", (details) => {
-            console.log("received gameOver");
             if(pointerLocked) {
                 document.exitPointerLock();
             }

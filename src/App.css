@@ -78,8 +78,7 @@ h2 {
   border: 2px solid #4B0082;
   border-radius: 3px;
   background-color: white;
-  min-height: 42vh;
-  font-size: 1.5vw;
+  min-height: 43vh;
 }
 
 #main {
@@ -92,8 +91,12 @@ h2 {
   font-size: 2.5vw;
 }
 
-#rules {
-  
+/* #controls p {
+  text-align: left;
+} */
+
+#rules p{
+  font-size: 1.5vw;
 }
 
 #playNow {
