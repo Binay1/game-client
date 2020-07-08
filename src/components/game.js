@@ -60,7 +60,7 @@ export default () => {
     // Component setup and cleanup
     useEffect(() => {
         // this is run on component mount
-        setSocket(io.connect("http://192.168.1.6:5000" + window.location.pathname));
+        setSocket(io.connect("https://mazerunnerserver.herokuapp.com" + window.location.pathname));
         // this is run on component dismount
         return () => {
             if(socket!==null) {
@@ -429,7 +429,7 @@ export default () => {
         // Set up sound
         spellSound = new BABYLON.Sound("spellSound", "https://dl.dropbox.com/s/e999de73zxwonbn/spellSound.wav", scene, null, {
             playbackRate: 2.5,
-            volume: 2,
+            volume: 1,
         });
         // backgroundMusic = new BABYLON.Sound("bgMusic", "https://dl.dropbox.com/s/rvdx3cvk4roxy30/backgroundMusic.mp3", scene, null, {
         //     loop: true,
