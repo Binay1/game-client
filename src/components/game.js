@@ -340,7 +340,7 @@ export default () => {
         particleSource.isVisible=false;
         particleSource.position = new BABYLON.Vector3(initialPosition.x, 9, initialPosition.z);
         particleSystem = new BABYLON.ParticleSystem("particles", 130, scene);
-        particleSystem.particleTexture = new BABYLON.Texture("https:/i.imgur.com/mDj16k4.png", scene);
+        particleSystem.particleTexture = new BABYLON.Texture("https://i.imgur.com/qsWZGCL.png", scene); 
         particleSystem.emitter = particleSource;
         // spawn point range
         particleSystem.minEmitBox = new BABYLON.Vector3(0, -4, 0); 
