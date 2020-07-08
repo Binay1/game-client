@@ -346,8 +346,8 @@ export default () => {
         particleSystem.minEmitBox = new BABYLON.Vector3(0, -4, 0); 
         particleSystem.maxEmitBox = new BABYLON.Vector3(15,-6,15);
         //colors
-        particleSystem.color1 = new BABYLON.Color4(255,10,0,1);
-        particleSystem.color2 = new BABYLON.Color4(255,10,0,1);
+        particleSystem.color1 = new BABYLON.Color4(255,20,0,1);
+        particleSystem.color2 = new BABYLON.Color4(255,20,0,1);
         // size range
         particleSystem.minSize = 0.05;
         particleSystem.maxSize = 0.07;
