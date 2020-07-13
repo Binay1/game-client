@@ -91,10 +91,6 @@ h2 {
   font-size: 2.5vw;
 }
 
-/* #controls p {
-  text-align: left;
-} */
-
 #rules p{
   font-size: 1.5vw;
 }
@@ -176,7 +172,22 @@ label {
   width: 100vw;
 }
 
+#loading {
+  height: 100vh;
+  width: 100vw;
+  background-color: #4B0082;
+}
+
 #canvas {
   height:100vh;
   width: 100vw;
+}
+
+#audioBox label {
+  font-size: 2vw;
+  transform: translateY(-0.7vh);
+}
+
+.switch {
+  margin-left:1vw;
 }

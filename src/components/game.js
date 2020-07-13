@@ -7,12 +7,15 @@ import "@babylonjs/loaders/glTF/2.0/glTFLoader";
 import * as Cannon from 'cannon';
 import * as GUI from '@babylonjs/gui/2D';
 import GamePopup from './gamePopup';
+import AudioSettings from './audioSettings';
+import Loading from './loading';
 import '../App.css';
-import flashAnimation from '../helpers/animations/flashAnimation';
-import recoil from '../helpers/animations/recoilAnimation';
 import emitterAnimation from '../helpers/animations/emitterAnimation';
+import visibilityAnimation from '../helpers/animations/visibilityAnimation';
+import scaleAnimation from '../helpers/animations/scaleAnimation';
 import fogAnimation from '../helpers/animations/fogAnimation';
 import intensityAnimation from '../helpers/animations/intensityAnimation';
+import attackAnimation from '../helpers/animations/attackAnimation';
 import shakeAnimation from '../helpers/animations/shakeAnimation';
 import flashMaterial from '../helpers/materials/flashMaterial';
 import groundMaterial from '../helpers/materials/groundMaterial';
@@ -20,7 +23,8 @@ import groundMaterial from '../helpers/materials/groundMaterial';
 //set global variable
 window.CANNON = Cannon; // Physics engine
 
-export default () => {
+const Game = () => {
+
     const reactCanvas = useRef(null);
 
     // Component State
@@ -30,37 +34,47 @@ export default () => {
     const [gameDetailsAvailable, setGameDetailsAvailable] = useState(false);
     const [socket, setSocket] = useState(null);
     const defaultMessage = "Maze Runner";
+    const initialMessage = "Click to enter game";
     const [popupMessage, setPopupMessage] = useState("");
-    const [statusBarMessage, setStatusBarMessage] = useState("Click to enter game");
+    const [statusBarMessage, setStatusBarMessage] = useState(initialMessage);
     const [gameOver, setGameOver] = useState(false);
+    const [audioSettingsVisible, setAudioSettingsVisible] = useState(false);
+    const [music, setMusic] = useState(false);
+    const [sound, setSound] = useState(true);
 
     // Declare all meshes and variables that you might need across functions here in order to have access
     // You might feel that some of this stuff needs to be in component state, but update and retrieval
     // of state is a slow process (also async, which causes its own set of problems) and this stuff needs
     // to run on 60fps. Since all of this won't be passed to any other components, we're good.
 
+    const fire = useRef(null);
+    const shoot = useRef(null);
+    const backgroundMusic = useRef(null);
+    const blockSize=3;
     let camera;
     let pointerLocked=false;
     let opponentContainer;
-    let muzzleSphere;
-    let opponentMuzzleSphere;
+    // let muzzleSphere;
+    // let opponentMuzzleSphere;
     let opponent;
     let initialPosition;
+    let playerAttackBeam;
+    let opponentAttackBeam;
     let particleSource;
     let opponentInitialPosition;
     let mazeContainer;
-    const blockSize=3;
     let spellMeshTracker=[];
     let glowWand;
     let equippedSpell = null;
     let particleSystem;
     let spellSound;
-    //let backgroundMusic;
+    let wand;
 
     // Component setup and cleanup
     useEffect(() => {
         // this is run on component mount
-        setSocket(io.connect("https://mazerunnerserver.herokuapp.com" + window.location.pathname));
+        // setSocket(io.connect("https://mazerunnerserver.herokuapp.com" + window.location.pathname));
+        setSocket(io.connect("http://192.168.1.6:5000" + window.location.pathname));
         // this is run on component dismount
         return () => {
             if(socket!==null) {
@@ -68,6 +82,34 @@ export default () => {
             }
         } // eslint-disable-next-line
     }, []); 
+
+    useEffect(() => {
+        if(backgroundMusic.current!==null) {
+            console.log("called: " + music);
+            if(music) {
+                backgroundMusic.current.play();
+            }
+            else {
+                backgroundMusic.current.stop();
+            }
+        }
+        return () => {
+            if(backgroundMusic.current!==null) {
+                backgroundMusic.current.stop();
+            }
+        }
+    }, [music]);
+
+    useEffect(()=>{
+        if(fire.current!==null) {
+            const canvas = document.getElementById("canvas");
+            canvas.removeEventListener("click", shoot.current);
+            shoot.current = () => {
+                fire.current(sound, statusBarMessage);
+            }
+            canvas.addEventListener("click", shoot.current);
+        }
+    }, [audioSettingsVisible]);
 
     // all socket events pre-render go here
     useEffect( () => {
@@ -78,6 +120,15 @@ export default () => {
             });
         }
     }, [socket]);
+
+    const resetStatusBar = () => {
+        if(equippedSpell===null) {
+            setStatusBarMessage(defaultMessage);
+        }
+        else {
+            setStatusBarMessage("Spell equipped: " + equippedSpell.spellName);
+        }
+    }
 
     // take all maze details and create a render of it
     const renderMaze = (maze, scene) => {
@@ -160,23 +211,6 @@ export default () => {
         }
     }, [scene]);
 
-    const createImpact = (scene, position, replaceStatusBarMessage) => {
-        let impact = BABYLON.MeshBuilder.CreateSphere("impact:" + position, { diameter: 0.2 }, scene);
-        impact.material = flashMaterial(scene);
-        impact.position = position;
-        impact.isPickable=false;
-        impact.visibility = 0;
-        impact.animations=[];
-        impact.animations.push(flashAnimation);
-        let impactAnim = scene.beginAnimation(impact, 0, 10, false);
-        impactAnim.onAnimationEnd = () => {
-            if(replaceStatusBarMessage) {
-                setStatusBarMessage(defaultMessage);
-            }
-            impact.dispose();
-        }
-    }
-
     // Sets up camera, attaches wand and all related animations
     const createPlayer = (scene) => {
         camera = new BABYLON.UniversalCamera("mainCamera", new BABYLON.Vector3().copyFrom(initialPosition), scene);
@@ -201,7 +235,6 @@ export default () => {
             }
             else if(collidedMesh.name === "target" && !gameOver) {
                 socket.emit("reachedTarget");
-                console.log("req sent");
                 if(pointerLocked) {
                     document.exitPointerLock();
                 }
@@ -223,7 +256,7 @@ export default () => {
         camera.attachControl(canvas, true);
 
         // wand creation and animations
-        let wand = new BABYLON.TransformNode("wand", scene);
+        wand = new BABYLON.TransformNode("wand", scene);
         let wandHandle = BABYLON.MeshBuilder.CreateCylinder("wandHandle", {diameterTop: 0.08, diameterBottom: 0.1, height: 2.5}, scene);
         wandHandle.material = new BABYLON.StandardMaterial("handleMat", scene);
         wandHandle.material.diffuseTexture = new BABYLON.Texture("https://i.imgur.com/tKjx3DI.jpg");
@@ -241,104 +274,13 @@ export default () => {
         wand.rotation.y = -Math.PI/6; 
         wand.parent=camera;
         wand.position = new BABYLON.Vector3(1, -1,1);
-        wand.animations.push(recoil(wand.position.z));
-
-        muzzleSphere = BABYLON.MeshBuilder.CreateSphere("muzzle", { diameter: 0.1 }, scene);
-        muzzleSphere.material = flashMaterial(scene);
-        muzzleSphere.diffuseColor = new BABYLON.Color3.FromHexString("#FFFFE0");
-        muzzleSphere.parent=wandOrb;
-        muzzleSphere.position = new BABYLON.Vector3(-0.05,0.01,-0.02);
-        muzzleSphere.visibility=0;
-        muzzleSphere.animations=[];
-        muzzleSphere.animations.push(flashAnimation);
-
-        // All of the logic executed whenever you click
-        const fire = () => {
-            if(equippedSpell!==null) {
-                if(equippedSpell.spellTarget==="opp") {
-                    spellSound.play();
-                    const ray = camera.getForwardRay(20);
-                    scene.beginAnimation(muzzleSphere, 0, 10, false);
-                    scene.beginAnimation(wand, 0, 10, false);
-                    const pick = scene.pickWithRay(ray);
-                    socket.emit("fire", {
-                        hitSomething: pick.hit,
-                        hitLocation: pick.pickedPoint,
-                        hitPlayer: pick.pickedMesh.name.includes("wizard"),
-                        spellName: equippedSpell.spellName,
-                        spellDuration: equippedSpell.spellDuration,
-                    }, () => {
-                        equippedSpell = null;
-                    });
-                    if(pick.hit) {
-                        createImpact(scene, pick.pickedPoint, true);
-                        setStatusBarMessage(defaultMessage);
-                    }
-                }
-                else {
-                    glowWand.animations.push(intensityAnimation(glowWand.intensity, 5));
-                    let intensityIncAnimation = scene.beginAnimation(glowWand, 0, 30);
-                    intensityIncAnimation.onAnimationEnd = () => {
-                        glowWand.animations.pop();
-                    }
-                    let duration = equippedSpell.spellDuration*1000;
-                    let revertChanges;
-                    if(equippedSpell.spellName==="Speed") {
-                        revertChanges = "Speed";
-                        camera.speed = 0.4;
-                    }
-                    else if(equippedSpell.spellName==="Clarity") {
-                        revertChanges = "Clarity";
-                        scene.animations.push(fogAnimation(scene.fogEnd, 100.0));
-                        let fogOutAnim = scene.beginAnimation(scene, 0, 30, false);
-                        fogOutAnim.onAnimationEnd = () => {
-                            scene.animations.pop();
-                        };
-                    }
-                    equippedSpell = null;
-                    setStatusBarMessage(defaultMessage);
-                    setTimeout(() => {
-                        glowWand.animations.push(intensityAnimation(glowWand.intensity, 0.5));
-                        let intensityDecAnimation = scene.beginAnimation(glowWand, 0, 30);
-                        intensityDecAnimation.onAnimationEnd = () => {
-                            glowWand.animations.pop();
-                        }
-                        if(revertChanges==="Speed") {
-                            camera.speed = 0.2;
-                        }
-                        else if(revertChanges==="Clarity") {
-                            scene.animations.push(fogAnimation(scene.fogEnd, 10.0));
-                            let fogInAnim = scene.beginAnimation(scene, 0, 30, false);
-                            fogInAnim.onAnimationEnd = () => {
-                                scene.animations.pop();
-                            };
-                        }
-                    }, duration);
-                }
-            }
-            else {
-                let previousMessage = statusBarMessage;
-                setStatusBarMessage("You don't have any spells equipped");
-                setTimeout(()=> {
-                    if(statusBarMessage!==defaultMessage && previousMessage!=="Click to enter game") {
-                        setStatusBarMessage(previousMessage);
-                    }
-                    else {
-                        setStatusBarMessage(defaultMessage);
-                    }
-                }, 3000);
-            }
-        } 
-
-    document.addEventListener("click", fire);
-
     }
 
     const setUpParticles = (scene) => {
         // set up particle system
         particleSource = BABYLON.Mesh.CreateBox("source", 1.0, scene);
         particleSource.isVisible=false;
-        particleSource.position = new BABYLON.Vector3(initialPosition.x, 9, initialPosition.z);
+        particleSource.position = new BABYLON.Vector3(initialPosition.x, 12, initialPosition.z);
         particleSystem = new BABYLON.ParticleSystem("particles", 130, scene);
         particleSystem.particleTexture = new BABYLON.Texture("https://i.imgur.com/qsWZGCL.png", scene); 
         particleSystem.emitter = particleSource;
@@ -370,7 +312,7 @@ export default () => {
         particleSystem.start();
         particleSource.animations=[];
         particleSource.animations.push(emitterAnimation);
-        scene.beginAnimation(particleSource, 0, 30, true);
+        scene.beginAnimation(particleSource, 0,25, true);
     }
 
     // Scene building starts from here
@@ -394,6 +336,17 @@ export default () => {
         scene.fogStart = 0.0;
         scene.fogEnd = 10.0; // can't see anything beyond this point
 
+        // Set up sound
+        spellSound = new BABYLON.Sound("spellSound", "https://dl.dropbox.com/s/e999de73zxwonbn/spellSound.wav", scene, null, {
+            playbackRate: 2.5,
+            volume: 0.6,
+        });
+        backgroundMusic.current = new BABYLON.Sound("bgMusic", "https://dl.dropbox.com/s/rvdx3cvk4roxy30/backgroundMusic.mp3", scene,
+        null, {
+            loop: true,
+            volume: 0.5,
+        });
+        
         let light = new BABYLON.PointLight("pointLight", new BABYLON.Vector3(gameDetails.maze.length, gameDetails.maze.length, gameDetails.maze.length), scene); 
         light.intensity = 0.8;
         let light2 = new BABYLON.HemisphericLight("hemiLight", new BABYLON.Vector3(0,1,0), scene);
@@ -406,14 +359,6 @@ export default () => {
         crosshair.fontSize = 24;
         gui.addControl(crosshair);
 
-        const canvas = scene.getEngine().getRenderingCanvas();
-        // enable pointer lock on click
-        scene.onPointerDown = (event) => {
-            if(!pointerLocked) {
-            canvas.requestPointerLock();
-            setStatusBarMessage(defaultMessage);
-            }
-        } 
         const togglePointerLocked = () => {
             if(!document.pointerLockElement) {
                 pointerLocked=false;
@@ -426,20 +371,114 @@ export default () => {
         // Attach event listener to the document
         document.addEventListener("pointerlockchange", togglePointerLocked);
 
-        // Set up sound
-        spellSound = new BABYLON.Sound("spellSound", "https://dl.dropbox.com/s/e999de73zxwonbn/spellSound.wav", scene, null, {
-            playbackRate: 2.5,
-            volume: 1,
+        const canvas = scene.getEngine().getRenderingCanvas();
+
+        document.addEventListener("keydown", (event) => {
+            if(event.keyCode===77) {
+                if(!audioSettingsVisible) {
+                    if(pointerLocked) {
+                        document.exitPointerLock();
+                    }
+                }
+                setAudioSettingsVisible(!audioSettingsVisible);
+            }
         });
-        // backgroundMusic = new BABYLON.Sound("bgMusic", "https://dl.dropbox.com/s/rvdx3cvk4roxy30/backgroundMusic.mp3", scene, null, {
-        //     loop: true,
-        //     autoplay:true,
-        //     volume: 0.8,
-        // });
+
+        initialPosition = new BABYLON.Vector3(gameDetails.startPosition.xcoord*2*blockSize,blockSize+0.5275,gameDetails.startPosition.zcoord*2*blockSize);
+        playerAttackBeam = new BABYLON.MeshBuilder.CreateCylinder("playerAttackBeam", {height:1, diameter:blockSize});
+        playerAttackBeam.position = new BABYLON.Vector3(initialPosition.x, 10, initialPosition.z);
+        playerAttackBeam.material = flashMaterial(scene);
+        playerAttackBeam.visibility = 0;
+        playerAttackBeam.animations = [];
+        playerAttackBeam.animations.push(visibilityAnimation(0,1));
+        playerAttackBeam.collisionsEnabled=false;
+        playerAttackBeam.animations.push(scaleAnimation(1,20));
 
         // Initialize the camera
-        initialPosition = new BABYLON.Vector3(gameDetails.startPosition.xcoord*2*blockSize,blockSize+0.5275,gameDetails.startPosition.zcoord*2*blockSize);
         createPlayer(scene);
+
+        // All of the logic executed whenever you click
+        fire.current = (playSound, statusBarMessage) => {
+            if(!pointerLocked) {
+                canvas.requestPointerLock();
+                if(statusBarMessage===initialMessage) {
+                    setStatusBarMessage(defaultMessage);
+                }
+            }
+            else {
+                if(equippedSpell!==null) {
+                    if(equippedSpell.spellTarget==="opp") {
+                        glowWand.animations.push(attackAnimation(glowWand.intensity, 5));
+                        let attackAnim = scene.beginAnimation(glowWand, 0, 30);
+                        attackAnim.onAnimationEnd = () => {
+                            glowWand.animations.pop();
+                        }
+                        if(playSound) {
+                            spellSound.play();
+                        }
+                        socket.emit("fire", {
+                            spellName: equippedSpell.spellName,
+                            spellDuration: equippedSpell.spellDuration,
+                        }, () => {
+                            equippedSpell = null;
+                        });
+                        scene.beginAnimation(opponentAttackBeam, 0, 20, false);
+                        setStatusBarMessage(defaultMessage);
+                    }
+                    else {
+                        glowWand.animations.push(intensityAnimation(glowWand.intensity, 5));
+                        let intensityIncAnimation = scene.beginAnimation(glowWand, 0, 30);
+                        intensityIncAnimation.onAnimationEnd = () => {
+                            glowWand.animations.pop();
+                        }
+                        let duration = equippedSpell.spellDuration*1000;
+                        let revertChanges;
+                        if(equippedSpell.spellName==="Speed") {
+                            revertChanges = "Speed";
+                            camera.speed = 0.4;
+                        }
+                        else if(equippedSpell.spellName==="Clarity") {
+                            revertChanges = "Clarity";
+                            scene.animations.push(fogAnimation(scene.fogEnd, 100.0));
+                            let fogOutAnim = scene.beginAnimation(scene, 0, 30, false);
+                            fogOutAnim.onAnimationEnd = () => {
+                                scene.animations.pop();
+                            };
+                        }
+                        equippedSpell = null;
+                        setStatusBarMessage(defaultMessage);
+                        setTimeout(() => {
+                            glowWand.animations.push(intensityAnimation(glowWand.intensity, 0.5));
+                            let intensityDecAnimation = scene.beginAnimation(glowWand, 0, 30);
+                            intensityDecAnimation.onAnimationEnd = () => {
+                                glowWand.animations.pop();
+                            }
+                            if(revertChanges==="Speed") {
+                                camera.speed = 0.2;
+                            }
+                            else if(revertChanges==="Clarity") {
+                                scene.animations.push(fogAnimation(scene.fogEnd, 10.0));
+                                let fogInAnim = scene.beginAnimation(scene, 0, 30, false);
+                                fogInAnim.onAnimationEnd = () => {
+                                    scene.animations.pop();
+                                };
+                            }
+                        }, duration);
+                    }
+                }
+                else {
+                    setStatusBarMessage("You don't have any spells equipped");
+                    setTimeout(()=> {
+                        resetStatusBar();
+                    }, 3000);
+                }
+             }
+        }
+
+        shoot.current = () => {
+            fire.current(sound, statusBarMessage);
+        }
+        canvas.addEventListener("click", shoot.current);
 
         // Set Up Particles
         setUpParticles(scene);
@@ -460,14 +499,15 @@ export default () => {
                 opponentContainer.setDirection(newPosDetails.direction);
             });
           });
-        opponentMuzzleSphere = BABYLON.MeshBuilder.CreateSphere("muzzle", { diameter: 0.1 }, scene);
-        opponentMuzzleSphere.material = flashMaterial(scene);
-        opponentMuzzleSphere.diffuseColor = new BABYLON.Color3.FromHexString("#FFFFE0");
-        opponentMuzzleSphere.parent = opponentContainer;
-        opponentMuzzleSphere.position = new BABYLON.Vector3(-0.2,0.775,0.7);
-        opponentMuzzleSphere.visibility=0;
-        opponentMuzzleSphere.animations=[];
-        opponentMuzzleSphere.animations.push(flashAnimation);
+
+        opponentAttackBeam = new BABYLON.MeshBuilder.CreateCylinder("opponentAttackBeam", {height:1, diameter:blockSize});
+        opponentAttackBeam.position = new BABYLON.Vector3(opponentInitialPosition.x, 10, opponentInitialPosition.z);
+        opponentAttackBeam.material = flashMaterial(scene);
+        opponentAttackBeam.visibility = 0;
+        opponentAttackBeam.animations = [];
+        opponentAttackBeam.animations.push(visibilityAnimation(0,1));
+        opponentAttackBeam.collisionsEnabled=false;
+        opponentAttackBeam.animations.push(scaleAnimation(1,20));
 
         // Remove spell from maze when opponent picks it up
         socket.on("removeSpell", (spellID) => {
@@ -476,37 +516,32 @@ export default () => {
 
         // Invoke the effects of the spell player was hit by
         socket.on("shotDetails", (shotDetails) => {
-            scene.beginAnimation(opponentMuzzleSphere,0,10, false);
-            if(shotDetails.hitSomething) {
-                createImpact(scene, shotDetails.hitLocation, false);
-                if(shotDetails.hitPlayer) {
-                    scene.beginAnimation(camera, 0, 15, false);
-                    if(shotDetails.spellName==="Freeze") {
-                        camera.inputs.attached.keyboard.detachControl();
-                        setStatusBarMessage("You have been frozen");
-                        setTimeout(() => {
-                            camera.inputs.attachInput(camera.inputs.attached.keyboard);
-                            setStatusBarMessage(defaultMessage);
-                        }, shotDetails.spellDuration*1000);
-                    }
-                    else if (shotDetails.spellName==="Blind") {
-                        scene.animations.push(fogAnimation(scene.fogEnd, 3.8));
-                        let fogInAnim = scene.beginAnimation(scene, 0, 30, false);
-                        fogInAnim.onAnimationEnd = () => {
-                            scene.animations.pop();
-                        };
-                        setStatusBarMessage("You have been blinded");
-                        setTimeout(() => {
-                            scene.animations.push(fogAnimation(scene.fogEnd, 10.0));
-                            let fogOutAnim = scene.beginAnimation(scene, 0, 30, false);
-                            fogOutAnim.onAnimationEnd = () => {
-                                scene.animations.pop();
-                            };
-                            setStatusBarMessage(defaultMessage);
-                        }, shotDetails.spellDuration*1000);
-                    }
-                }
+            scene.beginAnimation(playerAttackBeam, 0, 20, false);
+            scene.beginAnimation(camera, 0, 25, false);
+            if(shotDetails.spellName==="Freeze") {
+                camera.inputs.attached.keyboard.detachControl();
+                setStatusBarMessage("You have been frozen");
+                setTimeout(() => {
+                    camera.inputs.attachInput(camera.inputs.attached.keyboard);
+                    resetStatusBar();
+                }, shotDetails.spellDuration*1000);
             }
+            else if (shotDetails.spellName==="Blind") {
+                scene.animations.push(fogAnimation(scene.fogEnd, 3.8));
+                let fogInAnim = scene.beginAnimation(scene, 0, 30, false);
+                fogInAnim.onAnimationEnd = () => {
+                    scene.animations.pop();
+                };
+                setStatusBarMessage("You have been blinded");
+                setTimeout(() => {
+                    scene.animations.push(fogAnimation(scene.fogEnd, 10.0));
+                    let fogOutAnim = scene.beginAnimation(scene, 0, 30, false);
+                    fogOutAnim.onAnimationEnd = () => {
+                        scene.animations.pop();
+                    };
+                    resetStatusBar();
+                }, shotDetails.spellDuration*1000);
+            }        
         });
 
         socket.on("gg", (details) => {
@@ -525,6 +560,8 @@ export default () => {
             direction.y=0;
             socket.emit("position", {position: camera.position, direction: direction});
             particleSource.position = new BABYLON.Vector3(camera.position.x, 10, camera.position.z);
+            playerAttackBeam.position = particleSource.position;
+            opponentAttackBeam.position = new BABYLON.Vector3(opponentContainer.position.x, 10, opponentContainer.position.z);
         });
 
         renderMaze(gameDetails.maze, scene);
@@ -551,13 +588,13 @@ export default () => {
             } else {
                 scene.onReadyObservable.addOnce(scene => onSceneReady(scene));
             }
-
+            
             engine.runRenderLoop(() => {
                 if (typeof onRender === 'function') {
                     onRender(scene);
                 }
                 scene.render();
-            })
+            });
         }
 
         return () => {
@@ -567,13 +604,28 @@ export default () => {
         } // eslint-disable-next-line
     }, [reactCanvas, gameDetailsAvailable]);
 
-    return (
-        <div id="gameContainer">
-            <div id="statusBar">
-                <p>{statusBarMessage}</p>
+    if(!gameDetailsAvailable) {
+        return (
+            <Loading />
+        );
+    }
+    else {
+        return (
+            <div id="gameContainer">
+                <div id="statusBar">
+                    <p>{statusBarMessage}</p>
+                </div>
+                { (audioSettingsVisible) ? 
+                <AudioSettings isThisVisible = {setAudioSettingsVisible} 
+                music = {music}
+                setMusic = {setMusic} 
+                sound = {sound}
+                setSound = {setSound} /> : null}
+                { (gameOver) ? <GamePopup message={popupMessage}/> : null }
+                <canvas ref={reactCanvas} id="canvas" />
             </div>
-            { (gameOver) ? <GamePopup message={popupMessage}/> : null }
-            <canvas ref={reactCanvas} id="canvas" />
-        </div>
-    );
+        );
+    }
 }
+
+export default Game;

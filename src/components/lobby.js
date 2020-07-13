@@ -1,7 +1,7 @@
 import React from 'react';
-import io from 'socket.io-client';
 import PropTypes from 'prop-types';
 import ReqPlay from './reqPlay';
+import CancelPlay from './cancelPlay';
 import { withRouter } from "react-router";
 
 class lobby extends React.Component {
@@ -15,25 +15,20 @@ class lobby extends React.Component {
               id:"",
               visible: false,
             },
+            cancelVisible: false,
             message : "",
         }
-        this.socket = null;
+        this.socket = this.props.socket;
         this.onSubmit = this.onSubmit.bind(this);
         this.onChange = this.onChange.bind(this);
         this.toggleReqPlay = this.toggleReqPlay.bind(this);
         this.updateReqPlayState = this.updateReqPlayState.bind(this);
+        this.updateCancelVisible = this.updateCancelVisible.bind(this);
+        this.toggleCancelVisible = this.toggleCancelVisible.bind(this);
         this.playRandom = this.playRandom.bind(this);
     }
 
     componentDidMount() {
-        // connect client to server
-        this.socket=io.connect("https://mazerunnerserver.herokuapp.com/lobby");
-        // receive player id and set component state
-        this.socket.on("initialize", (res) => {
-          this.setState({playerID: res.playerID});
-          // Pass state to parent so everything is in sync
-          this.props.updateState(this.state.playerID);
-        });
         // Event listener: update state whenever number of players changes
         this.socket.on("playerUpdate", (res) => {
           this.setState({playersInLobby: res.playersInLobby});
@@ -53,16 +48,22 @@ class lobby extends React.Component {
         });
       }
 
-      componentWillUnmount() {
-        this.socket.disconnect();
-      }
-
       // to be passed to children so they can lift up the local state
       updateReqPlayState(id, visible) {
         this.setState({reqPlay: {
           id: id,
           visible: visible,
         }});
+      }
+
+      updateCancelVisible(visible) {
+        this.setState({
+          cancelVisible: visible,
+        });
+      }
+
+      toggleCancelVisible() {
+        this.setState({cancelVisible:true});
       }
 
       // Make reqPlay visible
@@ -75,6 +76,7 @@ class lobby extends React.Component {
 
       playRandom() {
         this.socket.emit("playRandom");
+        this.toggleCancelVisible();
       }
 
       onSubmit(event) {
@@ -100,11 +102,13 @@ class lobby extends React.Component {
             </div>
             {(this.state.reqPlay.visible) ? 
             <ReqPlay 
-             visible = {this.state.reqPlay.visible}
              id={this.state.reqPlay.id}
              socket={this.socket}
              updateState={this.updateReqPlayState}/>
              : null}
+             {
+               this.state.cancelVisible ? <CancelPlay socket={this.socket} updateState={this.updateCancelVisible} /> : null
+             }
              <div className="container-fluid">
                <div className="row">
                 <div id="reqPlayForm" className="col-sm-6">
@@ -123,6 +127,33 @@ class lobby extends React.Component {
                 </div>
                </div>
              </div>
+             <div id="infoContainer" className="container-fluid">
+              <div className="row">
+                <div className="col-sm-6 infoBox" id="rules">
+                  <div className="infoWrapper">
+                    <h1>Rules</h1>
+                    <p>
+                      This is a battle between two wizards stuck in the void between two dimensions.
+                      There is only one exit and only one of them can leave. The other one won't die, he'll just be stuck there for eternity.
+                      There is no death in this timeless void. If you jump off the path, you will just spawn back to where you started again.
+                      There are spells spread throughout that can be used via your magical wand once you pick them up.
+                      Beware though, each spell can only be used once and you can't pick two at the same time.
+                      Your wand will automatically absorb any new spell you touch. May the best wizard win.
+                    </p>
+                  </div>
+                </div>
+                <div className="col-sm-4 infoBox" id="controls">
+                  <div className="infoWrapper">
+                    <h1>Controls</h1>
+                    <p>
+                      WASD or Arrow keys for movement <br/>
+                      Mouse to look around <br/>
+                      Click to fire spell <br/>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         );
       }
@@ -131,7 +162,7 @@ class lobby extends React.Component {
 // set propTypes to prevent passing of wrong data types
 lobby.propTypes = {
     playerID: PropTypes.string.isRequired,
-    updateState: PropTypes.func.isRequired,
+    socket: PropTypes.object.isRequired,
   };
   
 // wrap component in withRouter to get access to history object (in order to redirect)

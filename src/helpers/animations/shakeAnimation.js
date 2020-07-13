@@ -5,32 +5,32 @@ const createAnimation = (initialPosY) => {
     let keys = [];
 
     keys.push({
-        frame: 0,
+        frame: 10,
         value: initialPosY,
     });
 
     keys.push({
-        frame: 3,
+        frame: 13,
         value: initialPosY-0.2,
     });
 
     keys.push({
-        frame: 6,
+        frame: 16,
         value: initialPosY+0.2,
     });
 
     keys.push({
-        frame: 9,
+        frame: 19,
         value: initialPosY-0.1,
     });
 
     keys.push({
-        frame: 12,
+        frame: 22,
         value:initialPosY+0.1,
     });
 
     keys.push({
-        frame: 15,
+        frame: 25,
         value:initialPosY,
     });
 
