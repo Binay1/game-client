@@ -149,6 +149,7 @@ class lobby extends React.Component {
                       WASD or Arrow keys for movement <br/>
                       Mouse to look around <br/>
                       Click to fire spell <br/>
+                      M for the Game Menu <br/>
                     </p>
                   </div>
                 </div>
