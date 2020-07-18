@@ -103,6 +103,7 @@ class lobby extends React.Component {
             {(this.state.reqPlay.visible) ? 
             <ReqPlay 
              id={this.state.reqPlay.id}
+             rematch={false}
              socket={this.socket}
              updateState={this.updateReqPlayState}/>
              : null}

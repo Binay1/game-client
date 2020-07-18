@@ -1,13 +1,15 @@
 import { Engine, Scene } from '@babylonjs/core';
 import React, { useEffect, useRef, useState } from 'react';
+import { useHistory } from "react-router-dom";
 import io from 'socket.io-client';
 import * as BABYLON from '@babylonjs/core/Legacy/legacy';
 import { SceneLoader } from "@babylonjs/core/Loading/sceneLoader";
 import "@babylonjs/loaders/glTF/2.0/glTFLoader";
 import * as Cannon from 'cannon';
 import * as GUI from '@babylonjs/gui/2D';
-import GamePopup from './gamePopup';
-import AudioSettings from './audioSettings';
+import GameOverPopup from './gameOverPopup';
+import Menu from './menu';
+import ReqPlay from './reqPlay';
 import Loading from './loading';
 import '../App.css';
 import emitterAnimation from '../helpers/animations/emitterAnimation';
@@ -24,8 +26,9 @@ import groundMaterial from '../helpers/materials/groundMaterial';
 window.CANNON = Cannon; // Physics engine
 
 const Game = () => {
-
+    
     const reactCanvas = useRef(null);
+    const history = useHistory();
 
     // Component State
     const [loaded, setLoaded] = useState(false);
@@ -38,14 +41,15 @@ const Game = () => {
     const [popupMessage, setPopupMessage] = useState("");
     const [statusBarMessage, setStatusBarMessage] = useState(initialMessage);
     const [gameOver, setGameOver] = useState(false);
-    const [audioSettingsVisible, setAudioSettingsVisible] = useState(false);
+    const [menuVisible, setMenuVisible] = useState(false);
+    const [reqPlayVisible, setReqPlayVisible] = useState(false);
     const [music, setMusic] = useState(false);
     const [sound, setSound] = useState(true);
 
     // Declare all meshes and variables that you might need across functions here in order to have access
     // You might feel that some of this stuff needs to be in component state, but update and retrieval
     // of state is a slow process (also async, which causes its own set of problems) and this stuff needs
-    // to run on 60fps. Since all of this won't be passed to any other components, we're good.
+    // to run fast. Since all of this won't be passed to any other components, it's all good.
 
     const fire = useRef(null);
     const shoot = useRef(null);
@@ -71,15 +75,15 @@ const Game = () => {
     // Component setup and cleanup
     useEffect(() => {
         // this is run on component mount
-        setSocket(io.connect("https://mazerunnerserver.herokuapp.com" + window.location.pathname));
-        //setSocket(io.connect("http://192.168.1.6:5000" + window.location.pathname));
+        // setSocket(io.connect("https://mazerunnerserver.herokuapp.com" + window.location.pathname));
+        setSocket(io.connect("http://192.168.1.6:5000" + window.location.pathname));
         // this is run on component dismount
         return () => {
             if(socket!==null) {
                 socket.disconnect();
             }
         } // eslint-disable-next-line
-    }, []); 
+    }, [location]); 
 
     useEffect(() => {
         if(backgroundMusic.current!==null) {
@@ -107,7 +111,7 @@ const Game = () => {
             }
             canvas.addEventListener("click", shoot.current);
         }
-    }, [audioSettingsVisible]);
+    }, [menuVisible]);
 
     // all socket events pre-render go here
     useEffect( () => {
@@ -115,6 +119,12 @@ const Game = () => {
             socket.on("setup", (gameDetails) => {
                 setGameDetails(gameDetails);
                 setGameDetailsAvailable(true);
+            });
+            socket.on("reqPlay", () => {
+                setReqPlayVisible(true);
+            });
+            socket.on("enterGame", (url) => {
+                history.push(url.redirectTo);
             });
         }
     }, [socket]);
@@ -373,12 +383,12 @@ const Game = () => {
 
         document.addEventListener("keydown", (event) => {
             if(event.keyCode===77) {
-                if(!audioSettingsVisible) {
+                if(!menuVisible) {
                     if(pointerLocked) {
                         document.exitPointerLock();
                     }
                 }
-                setAudioSettingsVisible(!audioSettingsVisible);
+                setMenuVisible(!menuVisible);
             }
         });
 
@@ -393,15 +403,14 @@ const Game = () => {
         playerAttackBeam.animations.push(scaleAnimation(1,20));
 
         // Initialize the camera
+        equippedSpell = gameDetails.initialSpell;
         createPlayer(scene);
 
         // All of the logic executed whenever you click
         fire.current = (playSound, statusBarMessage) => {
             if(!pointerLocked) {
                 canvas.requestPointerLock();
-                if(statusBarMessage===initialMessage) {
-                    setStatusBarMessage(defaultMessage);
-                }
+                resetStatusBar();
             }
             else {
                 if(equippedSpell!==null) {
@@ -613,13 +622,19 @@ const Game = () => {
                 <div id="statusBar">
                     <p>{statusBarMessage}</p>
                 </div>
-                { (audioSettingsVisible) ? 
-                <AudioSettings isThisVisible = {setAudioSettingsVisible} 
+                { (menuVisible) ? 
+                <Menu isThisVisible = {setMenuVisible} 
                 music = {music}
                 setMusic = {setMusic} 
                 sound = {sound}
-                setSound = {setSound} /> : null}
-                { (gameOver) ? <GamePopup message={popupMessage}/> : null }
+                setSound = {setSound}
+                socket = {socket} /> : null}
+                { (gameOver) ? <GameOverPopup message={popupMessage} socket={socket}/> : null }
+                { (reqPlayVisible) ? 
+                <ReqPlay 
+                rematch={true}
+                socket={socket}
+                updateState={setReqPlayVisible}/> : null }
                 <canvas ref={reactCanvas} id="canvas" />
             </div>
         );

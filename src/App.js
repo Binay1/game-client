@@ -17,8 +17,8 @@ class App extends React.Component {
 
   componentDidMount() {
         // connect client to server
-        this.socket=io.connect("https://mazerunnerserver.herokuapp.com/lobby");
-        //this.socket = io.connect("http://192.168.1.6:5000/lobby");
+        // this.socket=io.connect("https://mazerunnerserver.herokuapp.com/lobby");
+        this.socket = io.connect("http://192.168.1.6:5000/lobby");
         // receive player id and set component state
         this.socket.on("initialize", (res) => {
           this.setState({playerID: res.playerID, loaded:true});

@@ -7,6 +7,7 @@ import Oops from './components/oops';
 import { BrowserRouter, Redirect } from 'react-router-dom';
 import { Route, Switch } from 'react-router';
 import * as serviceWorker from './serviceWorker';
+import {v4 as uuidv4} from 'uuid';
 
 ReactDOM.render(
   <BrowserRouter>
@@ -15,7 +16,7 @@ ReactDOM.render(
         <Redirect to="/lobby" />
       </Route>
       <Route exact path="/lobby" component={App}/>
-      <Route path="/game/:gameID" component={Game}/>
+      <Route path="/game/:gameID" render={() => <Game key={uuidv4()}/>}/>
       <Route component={Oops}/>
     </Switch>
   </BrowserRouter>,

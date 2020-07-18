@@ -1,8 +1,11 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import Switch from 'react-switch';
 import PropTypes from 'prop-types';
+import { useHistory } from "react-router-dom";
 
-function AudioSettings(props) {
+function Menu(props) {
+
+    const history = useHistory();
 
     const music  = () => {
         props.setMusic(!props.music);
@@ -16,11 +19,16 @@ function AudioSettings(props) {
         props.isThisVisible(false);
     }
 
+    const quit = () => {
+        props.socket.disconnect();
+        history.push("/lobby");      
+    }
+
     return (
-        <div id="audioBox" className="popup">
+        <div id="menuBox" className="popup">
         <div className="popupContent container">
-            <h2>Audio Settings</h2>
-            <div className="row">
+            <h2>Menu</h2>
+            <div id = "switchContainer" className="row">
                 <div className="col-sm-6">
                     <label>
                         Music
@@ -34,8 +42,13 @@ function AudioSettings(props) {
                     <Switch onChange={sound} checked={props.sound} checkedIcon={false} uncheckedIcon={false} className="switch" />
                 </div>
             </div>
-            <div className="btnContainer">
-                <button className="btn-lg" type="button" onClick={close}>Close</button>
+            <div className="row">
+                <div className="btnContainer col-sm-6">
+                    <button className="btn-lg" type="button" onClick={quit}>Quit</button>
+                </div>            
+                <div className="btnContainer col-sm-6">
+                    <button className="btn-lg" type="button" onClick={close}>Close</button>
+                </div>
             </div>
         </div>
     </div>
@@ -43,17 +56,13 @@ function AudioSettings(props) {
 }
 
 // set propTypes to prevent passing of wrong data types
-AudioSettings.propTypes = {
+Menu.propTypes = {
     isThisVisible: PropTypes.func.isRequired,
     music: PropTypes.bool.isRequired,
     setMusic: PropTypes.func.isRequired,
     sound: PropTypes.bool.isRequired,
     setSound: PropTypes.func.isRequired,
-    // statusBarMessage: PropTypes.string.isRequired,
-    // previousMessage: PropTypes.string.isRequired,
-    // setStatusBarMessage: PropTypes.func.isRequired,
-    // setPreviousMessage: PropTypes.func.isRequired,
-    // messages: PropTypes.object.isRequired,
+    socket: PropTypes.object.isRequired,
 };
 
-export default AudioSettings;
+export default Menu;

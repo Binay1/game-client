@@ -14,8 +14,10 @@ function CancelPlay(props) {
         <div id="cancelBox" className="popup">
             <div className="popupContent">
                 <h2>Looking for an opponent</h2>
-                <div className="btnContainer">
-                    <button className="btn-lg" type="button" onClick={leaveRoom}>Cancel</button>
+                <div className="row">
+                    <div className="btnContainer col-sm-12">
+                        <button className="btn-lg" type="button" onClick={leaveRoom}>Cancel</button>
+                    </div>
                 </div>
             </div>
         </div>

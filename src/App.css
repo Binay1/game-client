@@ -69,8 +69,7 @@ h2 {
 }
 
 .btnContainer button {
-  margin-top:0;
-  width: 8vw;
+  width: 10vw;
 }
 
 .infoBox {
@@ -132,7 +131,7 @@ body {
 }
 
 button {
-  margin-top:2vh;
+  margin-top:1vh;
   background-color: #4B0082;
   border-color: #4B0082;
   color:white;
@@ -183,7 +182,15 @@ label {
   width: 100vw;
 }
 
-#audioBox label {
+#switchContainer {
+  margin-top:2.5vh;
+}
+
+#menuBox {
+  height:35vh;
+}
+
+#menuBox label {
   font-size: 2vw;
   transform: translateY(-0.7vh);
 }
