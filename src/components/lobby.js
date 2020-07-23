@@ -124,7 +124,7 @@ class lobby extends React.Component {
                 </div>
                 <div id="main" className="col-sm-6">
                   <h1 id="logo">MAZE <br/> RUNNER</h1>
-                  <button id="playNow" className="btn-lg" type="button" onClick = {this.playRandom}>Play Now</button>
+                  <button id="playNow" className="btn-lg" type="button" onClick = {this.playRandom}>Play with Random</button>
                 </div>
                </div>
              </div>
