@@ -23,7 +23,7 @@ h2 {
   background-repeat:no-repeat;
   background-size: cover;
   height:100%;
-  width:100vw;
+  width:100%;
 }
 
 #logo {
@@ -81,7 +81,7 @@ h2 {
   border: 2px solid #4B0082;
   border-radius: 3px;
   background-color: white;
-  min-height: 21vw;
+  min-height: 100%;
 }
 
 #main {
@@ -91,6 +91,8 @@ h2 {
 
 #controls {
   margin: auto;
+  margin-top:0;
+  margin-bottom:0;
   font-size: 2.4vw;
 }
 
@@ -128,10 +130,16 @@ body {
   font-family: 'Odibee Sans';
   color: #4B0082;
   height:100%;
-  width:100vw;
+  width:100%;
   margin: 0 0 0 0;
   padding: 0 0 0 0;
-  /* overflow: hidden; */
+  overflow:auto;
+}
+
+html {
+  min-height:100%;
+  width:100%;
+  overflow:auto;
 }
 
 button {
@@ -154,6 +162,7 @@ label {
 #infoContainer {
   margin-top: 4vh;
   margin-bottom: 4vh;
+  min-height:22vw;
 }
 
 #statusBar {
@@ -167,7 +176,7 @@ label {
 
 #root {
   height: 100%;
-  width: 100vw;
+  width: 100%;
 }
 
 #gameContainer {

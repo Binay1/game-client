@@ -75,15 +75,15 @@ const Game = () => {
     // Component setup and cleanup
     useEffect(() => {
         // this is run on component mount
-        setSocket(io.connect("https://mazerunnerserver.herokuapp.com" + window.location.pathname));
-        // setSocket(io.connect("http://192.168.1.6:5000" + window.location.pathname));
+        // setSocket(io.connect("https://mazerunnerserver.herokuapp.com" + window.location.pathname));
+        setSocket(io.connect("http://192.168.1.6:5000" + window.location.pathname));
         // this is run on component dismount
         return () => {
             if(socket!==null) {
                 socket.disconnect();
             }
-        } // eslint-disable-next-line
-    }, [location]); 
+        }
+    }, []);
 
     useEffect(() => {
         if(backgroundMusic.current!==null) {
