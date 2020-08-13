@@ -1,8 +1,7 @@
 # Maze Runner (client)
 - This repo contains all the client-side code for the game (dubbed Maze Runner) that I am creating.
 - This repo is meant to be used in conjunction with the game-server repo.
-- All the main features of the application have been completed with only game-balnce changes, minor upgrades left 
-- The lobby has been designed to some extent. Controls and rules need to be added and the CSS needs significant work but it isn't a priority right now.
+- All the main features of the application have been completed. Lobby needs some CSS upgrade.
 - The client-side uses babylonjs, a graphics engine using WebGL for all of the graphics that you will see here.
 
 # Instructions for use
